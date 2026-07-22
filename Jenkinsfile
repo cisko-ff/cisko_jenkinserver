@@ -20,8 +20,8 @@ pipeline {
           sh '''
             az storage file upload-batch \
               --account-name "$AZ_ACCOUNT" \
-              --account-key "$AZ_KEY" \
-              --destination "$AZ_SHARE" \
+              --account-key "$STORAGE_KEY" \
+              --destination "$AZURE_FILE_SHARE" \
               --source . --no-progress
           '''
         }
@@ -32,7 +32,7 @@ pipeline {
       steps {
         sh '''
           sleep 10
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$STAGING_URL")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$ACI_URL")
           if [ "$HTTP_CODE" != "200" ]; then
             echo "FAIL: Staging returned HTTP $HTTP_CODE"
             exit 1
