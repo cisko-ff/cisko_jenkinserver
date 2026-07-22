@@ -1,53 +1,93 @@
-// GitHub push -> webhook -> Jenkins -> SSH/rsync -> Apache servers (/var/www/html).
-// Uses the SSH Agent plugin + the 'webservers-ssh-key' credential. Put at repo ROOT.
-
 pipeline {
+ 
     agent any
-
-    options {
-        timestamps()
-        disableConcurrentBuilds()
-    }
-
+ 
     environment {
-        // ---- EDIT THESE ----
-        SERVERS = 'ubuntu@35.172.180.227 ubuntu@54.242.168.231'  // your two web servers
-        DOCROOT = '/var/www/html'                             // Apache default doc root
-        APP_SRC = './'                                        // repo root; 'dist/' if you build
-        // --------------------
+        AZ_ACCOUNT = 'milestoneic09'
+        AZ_SHARE = 'milestone'
+        STAGING_URL = 'http://ciskomilestone.eshmare9dugme0a4.eastus.azurecontainer.io/'
     }
-
+ 
     stages {
-
+ 
         stage('Checkout') {
-            steps { checkout scm }
-        }
-
-        stage('Build & Test') {
             steps {
-                // Put real build/test commands here if any, e.g. sh 'npm ci && npm run build'
-                sh 'echo "No build step — deploying repo as-is."'
+                checkout scm
             }
         }
-
-        stage('Deploy') {
+ 
+        stage('Deploy to Staging') {
             steps {
-                sshagent(credentials: ['webservers-ssh-key']) {
+ 
+                withCredentials([
+                    string(credentialsId: 'azure-storage-key', variable: 'AZ_KEY')
+                ]) {
+ 
                     sh '''
-                        set -eu
-                        SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-                        for HOST in ${SERVERS}; do
-                            echo "=== Deploying to ${HOST}:${DOCROOT} ==="
-                            # --rsync-path="sudo rsync" lets rsync write to /var/www/html on the server.
-                            rsync -az --delete -e "ssh ${SSH_OPTS}" --rsync-path="sudo rsync" \
-                                --exclude '.git' --exclude 'Jenkinsfile' \
-                                "${APP_SRC}" "${HOST}:${DOCROOT}/"
-                            ssh ${SSH_OPTS} "${HOST}" "sudo systemctl reload apache2"
-                            echo "=== ${HOST} updated ==="
-                        done
+                    az storage file upload-batch \
+                      --account-name "milestoneic09" \
+                      --account-key "XIIWMSBei6XpT6IZEWsWPCUnXlqX/5XoAcVVBU/zO4gV2uSqUJXHUQe9EGLdRUsUkQUG3vUqDePr+ASt6P29bA==" \
+                      --destination "milestone" \
+                      --source . \
+                      --pattern "*.html" \
+                      --no-progress
                     '''
                 }
             }
+        }
+ 
+        stage('Test Staging Availability') {
+            steps {
+                sh '''
+                curl -f $STAGING_URL
+                '''
+            }
+        }
+ 
+        stage('Validate Staging Content') {
+            steps {
+ 
+                script {
+ 
+                    def content = sh(
+                        script: "curl -s http://ciskomilestone.eshmare9dugme0a4.eastus.azurecontainer.io/",
+                        returnStdout: true
+                    ).trim()
+ 
+                    if (!content.contains("Hello")) {
+                        error("Staging content validation failed")
+                    }
+ 
+                    echo "Staging validation passed"
+                }
+            }
+        }
+ 
+        stage('Deploy Production') {
+ 
+            steps {
+ 
+                sshagent(credentials: ['milestoneic09']) {
+ 
+                    sh '''
+                  scp -o StrictHostKeyChecking=no index.html ubuntu@10.0.142.29:/var/www/html/
+ 
+                  scp -o StrictHostKeyChecking=no index.html ubuntu@10.0.151.178:/var/www/html/
+                    '''
+                }
+ 
+            }
+        }
+    }
+ 
+    post {
+ 
+        success {
+            echo 'Deployment completed successfully'
+        }
+ 
+        failure {
+            echo 'Pipeline failed. Production deployment blocked.'
         }
     }
 }
