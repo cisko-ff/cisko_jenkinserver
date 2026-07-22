@@ -18,7 +18,7 @@ stage('Deploy to ACI (file share)') {
 
 steps {
 
-withCredentials([string(credentialsId: 'milestoneic09', variable: 'AZ_KEY')]) {
+withCredentials([string(credentialsId: 'milestoneic09', variable: 'XIIWMSBei6XpT6IZEWsWPCUnXlqX/5XoAcVVBU/zO4gV2uSqUJXHUQe9EGLdRUsUkQUG3vUqDePr+ASt6P29bA==')]) {
 
 sh '''
 
