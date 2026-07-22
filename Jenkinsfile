@@ -16,7 +16,7 @@ pipeline {
 
     stage('Deploy to Staging (Azure ACI)') {
       steps {
-        withCredentials([string(credentialsId: 'azure-storage-key', variable: 'AZ_KEY')]) {
+        withCredentials([string(credentialsId: 'milestoneic09', variable: 'AZ_KEY')]) {
           sh '''
             az storage file upload-batch \
               --account-name "$AZ_ACCOUNT" \
