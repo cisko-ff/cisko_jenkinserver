@@ -18,7 +18,7 @@ stage('Deploy to ACI (file share)') {
 
 steps {
 
-withCredentials([string(credentialsId: 'azure-storage-key', variable: 'AZ_KEY')]) {
+withCredentials([string(credentialsId: 'milestoneic09', variable: 'AZ_KEY')]) {
 
 sh '''
 
