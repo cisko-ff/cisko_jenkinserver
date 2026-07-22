@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    AZ_ACCOUNT   = 'cisko'
+    AZ_ACCOUNT   = 'milestoneic09'
     AZ_SHARE     = 'milestone'
     STAGING_URL  = 'http://ciskomilestone.eshmare9dugme0a4.eastus.azurecontainer.io/'
     WEB_SERVER_1 = '10.0.3.167'
@@ -19,7 +19,7 @@ pipeline {
         withCredentials([string(credentialsId: 'milestoneic09', variable: 'AZ_KEY')]) {
           sh '''
             az storage file upload-batch \
-              --account-name "$AZ_ACCOUNT" \
+              --account-name "$STORAGE_ACCOUNT" \
               --account-key "$STORAGE_KEY" \
               --destination "$AZURE_FILE_SHARE" \
               --source . --no-progress
