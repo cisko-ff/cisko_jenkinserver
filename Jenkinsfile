@@ -20,7 +20,7 @@ pipeline {
             steps {
  
                 withCredentials([
-                    string(credentialsId: 'azure-storage-key', variable: 'AZ_KEY')
+                    string(credentialsId: 'milestoneic09", variable: 'XIIWMSBei6XpT6IZEWsWPCUnXlqX/5XoAcVVBU/zO4gV2uSqUJXHUQe9EGLdRUsUkQUG3vUqDePr+ASt6P29bA==')
                 ]) {
  
                     sh '''
@@ -39,7 +39,7 @@ pipeline {
         stage('Test Staging Availability') {
             steps {
                 sh '''
-                curl -f $STAGING_URL
+                curl -f http://ciskomilestone.eshmare9dugme0a4.eastus.azurecontainer.io/
                 '''
             }
         }
