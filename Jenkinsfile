@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    AZ_ACCOUNT   = 'milestoneic09'
+    AZ_ACCOUNT   = 'cisko'
     AZ_SHARE     = 'milestone'
     STAGING_URL  = 'http://ciskomilestone.eshmare9dugme0a4.eastus.azurecontainer.io/'
     WEB_SERVER_1 = '10.0.3.167'
