@@ -1,43 +1,37 @@
 pipeline {
+    agent any
 
-agent any
+    environment {
+        AZ_ACCOUNT = 'milestoneic09'
+        AZ_SHARE = 'milestone'
+    }
 
-environment {
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
-AZ_ACCOUNT = 'milestoneic'
-
-AZ_SHARE = 'milestone'
-
+        stage('Deploy to Azure File Share') {
+            steps {
+                withCredentials([
+                    string(
+                        credentialsId: 'milestoneic09',
+                        variable: 'AZURE_STORAGE_KEY'
+                    )
+                ]) {
+                    sh '''
+                        az storage file upload-batch \
+                          --account-name "$AZ_ACCOUNT" \
+                          --account-key "$AZURE_STORAGE_KEY" \
+                          --destination "$AZ_SHARE" \
+                          --source . \
+                          --pattern "*.html" \
+                          --no-progress
+                    '''
+                }
+            }
+        }
+    }
 }
-
-stages {
-
-stage('Checkout') { steps { checkout scm } }
-
-stage('Deploy to ACI (file share)') {
-
-steps {
-
-withCredentials([string(credentialsId: 'milestoneic09', variable: 'XIIWMSBei6XpT6IZEWsWPCUnXlqX/5XoAcVVBU/zO4gV2uSqUJXHUQe9EGLdRUsUkQUG3vUqDePr+ASt6P29bA==')]) {
-
-sh '''
-
-az storage file upload-batch \
-
---account-name "milestoneic09" --account-key "XIIWMSBei6XpT6IZEWsWPCUnXlqX/5XoAcVVBU/zO4gV2uSqUJXHUQe9EGLdRUsUkQUG3vUqDePr+ASt6P29bA==" \
-
---destination "milestone" --source . \
-
---pattern "*.html" --no-progress
-
-'''
-
-}
-
-}
-
-}
-
-}
-
-}‌
